@@ -1,1 +1,43 @@
-// POC minimal: simula AulaAI.init e cria um avatar visual simples (function(global){ const AulaAI = { inits: [], init(opts){ const {containerId, business, persona, roomId} = opts; const el = document.getElementById(containerId); if(!el){ console.warn('Container not found:', containerId); return; } // Limpa e cria uma área de avatar el.innerHTML = ''; const box = document.createElement('div'); box.style.width = '100%'; box.style.height = '100%'; box.style.display = 'flex'; box.style.flexDirection = 'column'; box.style.alignItems = 'center'; box.style.justifyContent = 'center'; box.style.background = '#f8f9fb'; box.style.borderRadius = '6px'; box.style.boxSizing = 'border-box'; box.style.padding = '12px'; // Visual do avatar (espaço reservado) const avatar = document.createElement('div'); avatar.style.width = '140px'; avatar.style.height = '140px'; avatar.style.borderRadius = '50%'; avatar.style.background = 'linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%)'; avatar.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)'; avatar.style.marginBottom = '12px'; // Nome / pessoa const title = document.createElement('div'); title.textContent = ${persona} — ${business}; title.style.fontWeight = '600'; title.style.marginBottom = '8px'; // Status / sala const info = document.createElement('div'); info.textContent = '' Sala: ${roomId}; info.style.fontSize = '13px'; info.style.color = '#555'; info.style.marginBottom = '12px'; // Controles const btn = document.createElement('button'); btn.textContent = 'Iniciar sessão'; btn.style.padding = '8px 12px'; btn.style.border = 'none'; btn.style.borderRadius = '6px'; btn.style.background = '#2563eb'; btn.style.color = '#fff'; btn.style.cursor = 'pointer'; btn.onclick = function(){ // Simula conexão e mensagens btn.disabled = verdadeiro; btn.textContent = 'Conectando...'; setTimeout(()=>{ btn.textContent = 'Sessão ativa'; btn.style.background = '#059669'; console.log('AulaAI conectado', {containerId, business, persona, roomId}); // cria feed de exemplo (texto) const feed = document.createElement('div'); feed.style.marginTop = '10px'; feed.style.fontSize = '13px'; feed.style.color = '#333'; feed.textContent = 'Chat: Olá! sou ' + persona + '.900); };
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>LELIS Avatares Interativos - POC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: #f3f4f6;
+      }
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 22px;
+      }
+      .subtitle {
+        font-size: 14px;
+        color: #4b5563;
+        margin-bottom: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .panel {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 260px;
+      }
+      .panel-title {

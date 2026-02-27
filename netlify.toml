@@ -1,0 +1,19 @@
+[build]
+  command = "npm install"
+  functions = "netlify/functions"
+  publish = "public"
+
+[[redirects]]
+  from = "/api/get-credentials"
+  to = "/.netlify/functions/get-credentials"
+  status = 200
+
+[[redirects]]
+  from = "/api/process-message"
+  to = "/.netlify/functions/process-message"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

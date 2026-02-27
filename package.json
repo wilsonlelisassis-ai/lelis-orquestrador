@@ -1,0 +1,20 @@
+{
+  "name": "lelis-orquestrador",
+  "version": "1.0.0",
+  "description": "AVATEA - Avatar Interativo com IA para Educação Especializada",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "openai": "^4.52.0",
+    "livekit-server-sdk": "^0.5.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": "24.x"
+  }
+}

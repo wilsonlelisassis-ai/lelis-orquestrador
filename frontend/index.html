@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVATEA - Avatar Interativo em Tempo Real</title>
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client@latest/dist/livekit-client.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #22c55e 0%, #a7f3d0 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .video-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-placeholder {
+            color: #999;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .controls-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .status-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-box.connected {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #166534;
+        }
+
+        .status-box.error {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #ef4444;
+        }
+
+        .status-box.connected .status-indicator {
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .budget-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        input, select {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-secondary {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chat-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            height: 150px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            border: 1px solid #e2e8f0;
+        }
+
+        .message {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .message.user {
+            background: #dbeafe;
+            text-align: right;
+            color: #1e40af;
+        }
+
+        .message.avatar {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            font-family: monospace;
+            font-size: 10px;
+        }
+
+        .mode-tag {
+            font-size: 9px;
+            text-transform: uppercase;
+            background: rgba(0,0,0,0.1);
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-right: 5px;
+        }
+
+        .chat-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input-group input {
+            flex: 1;
+        }
+
+        .chat-input-group button {
+            padding: 10px 12px;
+            min-width: 50px;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #1e40af;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 AVATEA</h1>
+            <p>Escola de Educação Especializada com IA para Crianças com Autismo</p>
+        </div>
+
+        <div class="content">
+            <!-- Seção de Vídeo -->
+            <div class="video-section">
+                <div class="video-container" id="videoContainer">
+                    <div class="video-placeholder">
+                        <p>🎥 Vídeo do Avatar aparecerá aqui</p>
+                        <p style="font-size: 12px; margin-top: 8px;">Clique em "Conectar" para iniciar</p>
+                    </div>
+                </div>
+                <div class="status-box" id="statusBox">
+                    <div>
+                        <span class="status-indicator"></span>
+                        <span id="statusText">Desconectado</span>
+                    </div>
+                    <div id="budgetDisplay" style="display: none;">
+                        Fala: <span class="budget-badge" id="budgetSeconds">600s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Controles -->
+            <div class="controls-section">
+                <div class="input-group">
+                    <label for="persona">Persona do Avatar</label>
+                    <select id="persona">
+                        <option value="Professor João">Professor João (Educador)</option>
+                        <option value="Dra. Maria">Dra. Maria (Terapeuta)</option>
+                        <option value="Amigo Alex">Amigo Alex (Companheiro)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="roomId">ID da Sala</label>
+                    <input type="text" id="roomId" placeholder="ex: sala-001" value="avatea-demo">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="connectBtn" onclick="connectToAvatar()">Conectar</button>
+                    <button class="btn-secondary" id="disconnectBtn" onclick="disconnectFromAvatar()" disabled>Desconectar</button>
+                </div>
+
+                <div class="chat-section">
+                    <label>Chat com Avatar</label>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input-group">
+                        <input type="text" id="chatInput" placeholder="Digite sua mensagem..." disabled>
+                        <button class="btn-primary" id="sendBtn" onclick="sendMessage()" disabled>Enviar</button>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>ℹ️ Eficiência GPT 1 Ativada:</strong><br>
+                    O avatar alterna entre modo fala e texto para economizar recursos. Quando o orçamento de fala estiver baixo, ele responderá apenas por texto.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const config = {
+            livekit: { url: null, token: null, room: null },
+            simli: { apiKey: null, faceId: null, sessionId: null },
+            user: { persona: 'Professor João', roomId: 'avatea-demo' }
+        };
+
+        async function connectToAvatar() {
+            try {
+                updateStatus('Conectando...', false);
+                document.getElementById('connectBtn').disabled = true;
+
+                const credentials = await fetchCredentialsFromBackend();
+                console.log('Credenciais recebidas:', credentials);
+                
+                config.livekit.url = credentials.livekit_url;
+                config.livekit.token = credentials.livekit_token;
+                config.simli.apiKey = credentials.simli_api_key;
+                config.simli.faceId = credentials.simli_face_id;
+
+                updateStatus('Conectado', true);
+                document.getElementById('budgetDisplay').style.display = 'block';
+                document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('chatInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('persona').disabled = true;
+                document.getElementById('roomId').disabled = true;
+
+                addChatMessage('avatar', `Olá! Sou ${document.getElementById('persona').value}. Como posso ajudá-lo hoje?`, 'TEXTO');
+
+            } catch (error) {
+                console.error('Erro ao conectar:', error);
+                updateStatus(`Erro: ${error.message}`, 'error');
+                addChatMessage('error', `FALHA NA CONEXÃO: ${error.message}`);
+                document.getElementById('connectBtn').disabled = false;
+            }
+        }
+
+        async function fetchCredentialsFromBackend() {
+            const response = await fetch('/api/get-credentials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    roomId: document.getElementById('roomId').value,
+                    persona: document.getElementById('persona').value
+                })
+            });
+            
+            if (!response.ok) {
+                let errorMsg = response.statusText;
+                const clonedResponse = response.clone(); // Clona a resposta
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.message || errorData.error || errorMsg;
+                } catch (e) {
+                    // Se não for JSON, tenta ler como texto da resposta clonada
+                    errorMsg = await clonedResponse.text();
+                }
+                throw new Error(errorMsg);
+            }
+            return await response.json();
+        }
+
+        function disconnectFromAvatar() {
+            updateStatus('Desconectado', false);
+            document.getElementById('budgetDisplay').style.display = 'none';
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('disconnectBtn').disabled = true;
+            document.getElementById('chatInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('persona').disabled = false;
+            document.getElementById('roomId').disabled = false;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addChatMessage('user', message);
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/process-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        persona: document.getElementById('persona').value,
+                        roomId: document.getElementById('roomId').value
+                    })
+                });
+
+                if (!response.ok) {
+                    let errorMsg = response.statusText;
+                    const clonedResponse = response.clone(); // Clona a resposta
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorData.error || errorMsg;
+                    } catch (e) {
+                        // Se não for JSON, tenta ler como texto da resposta clonada
+                        errorMsg = await clonedResponse.text();
+                    }
+                    throw new Error(errorMsg);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addChatMessage('avatar', data.response, data.mode);
+                    document.getElementById('budgetSeconds').textContent = data.tts_budget_remaining + 's';
+                    
+                    if (data.mode === 'FALA_CURTA' && data.audioUrl) {
+                        console.log('Avatar falando (Simli):', data.audioUrl);
+                    }
+                } else {
+                    addChatMessage('avatar', 'Desculpe, tive um problema técnico.', 'TEXTO');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                addChatMessage('error', `ERRO NO PROCESSAMENTO: ${error.message}`);
+            }
+        }
+
+        function addChatMessage(sender, text, mode) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            
+            if (sender === 'avatar' && mode) {
+                const modeTag = document.createElement('span');
+                modeTag.className = 'mode-tag';
+                modeTag.textContent = mode === 'FALA_CURTA' ? '🔊 Fala' : '💬 Texto';
+                messageEl.appendChild(modeTag);
+            }
+            
+            const textNode = document.createTextNode(text);
+            messageEl.appendChild(textNode);
+            
+            chatMessages.appendChild(messageEl);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function updateStatus(text, isConnected) {
+            const statusBox = document.getElementById('statusBox');
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = text;
+            statusBox.classList.remove('connected', 'error');
+            if (isConnected === true) statusBox.classList.add('connected');
+            else if (isConnected === 'error') statusBox.classList.add('error');
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

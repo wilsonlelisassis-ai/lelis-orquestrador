@@ -1,7 +1,0 @@
-{
-  "buildCommand": "cd client && pnpm run build",
-  "installCommand": "pnpm install",
-  "outputDirectory": "client/dist",
-  "framework": "vite",
-  "rootDirectory": "."
-}
